@@ -19,9 +19,9 @@ export async function GET() {
 
   return Response.json({
     accountAssociation: withValidProperties({
-      header: process.env.FARCASTER_HEADER || "eyJmaWQiOjEzMjQ0MDEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg1NjdmYUVDZTc5YTUzM0EwRjU5RmEzNzkxYkYxYkU1ZDNCMTdiNDI5In0",
+      header: process.env.FARCASTER_HEADER || "eyJmaWQiOjEzMjQ0MDEsInR5cGUiOiJhdXRoIiwia2V5IjoiMHg1MDVhODdlOTE0OTNmY0E4MWU5MjlFYjk1YWFEZTIwMEQ2NjA5N2E0In0",
       payload: process.env.FARCASTER_PAYLOAD || "eyJkb21haW4iOiJwb3AtbWEtZGljZS52ZXJjZWwuYXBwIn0",
-      signature: process.env.FARCASTER_SIGNATURE || "MHhjYTUxNzBhZTZlMGY3MjBhNmZkMzQwOTQ2ZmQ1ZjEzNWZhMDE3Y2QyNjJjNDc4YmVhODY3NTUwNTg1NTAzZTc4MGZiMGE4NjE1NGNkMjQ2ZGNlNTA5OTI4Zjg4MDQwNmYxNDFiZGU0NTI0OGQxNmQ3ODhkMzM2OWJjZTdhZjMxNzFi",
+      signature: process.env.FARCASTER_SIGNATURE || "qDw45uhMVd9F/FcYQgCiSCWALvAkJKqEzty2xFib7C9omVDxYW795CpivOdj72GFiWTGpS8/9nS18evU8HgLsBw=",
     }),
     baseBuilder: withValidProperties({
       allowedAddresses: process.env.BASE_BUILDER_ALLOWED_ADDRESSES ?
