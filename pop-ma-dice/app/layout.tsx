@@ -10,7 +10,12 @@ export const viewport: Viewport = {
 };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const URL = process.env.NEXT_PUBLIC_URL;
+  const URL = process.env.NEXT_PUBLIC_URL || 'https://pop-ma-dice.vercel.app';
+  const projectName = process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Pop Ma Dice';
+  const heroImage = process.env.NEXT_PUBLIC_APP_HERO_IMAGE || `${URL}/pop-ma-dice-logo.png`;
+  const splashImage = process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE || `${URL}/pop-ma-dice-logo.png`;
+  const splashBgColor = process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR || '#16a34a';
+
   return {
     title: "Pop Ma Dice - Roll the Dice Game",
     description: "A fun dice game on the Base network. Roll the dice, test your luck, and win big! Play offchain or onchain with crypto stakes.",
@@ -46,16 +51,15 @@ export async function generateMetadata(): Promise<Metadata> {
     other: {
       "fc:frame": JSON.stringify({
         version: "next",
-        imageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE,
+        imageUrl: heroImage,
         button: {
-          title: `Launch ${process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME}`,
+          title: `Launch ${projectName}`,
           action: {
             type: "launch_frame",
-            name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME,
+            name: projectName,
             url: URL,
-            splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE,
-            splashBackgroundColor:
-              process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR,
+            splashImageUrl: splashImage,
+            splashBackgroundColor: splashBgColor,
           },
         },
       }),
