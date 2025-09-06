@@ -304,14 +304,14 @@ export default function DiceGame() {
       )}
 
       {/* Hero Logo */}
-      <div className="mb-8 text-center">
+      <div className="mb-6 text-center">
         <div className="relative inline-block">
           <Image
             src="/pop-ma-dice-logo.png"
             alt="Pop Ma Dice"
-            width={320}
-            height={320}
-            className="w-80 h-auto mx-auto mb-4 drop-shadow-2xl hover:scale-105 transition-all duration-300 rounded-2xl"
+            width={200}
+            height={200}
+            className="w-48 h-auto mx-auto mb-3 drop-shadow-xl hover:scale-105 transition-all duration-300 rounded-xl"
             priority
             onError={(e) => {
               // Fallback to text logo if image fails to load
@@ -323,18 +323,18 @@ export default function DiceGame() {
           />
           {/* Fallback text logo */}
           <div
-            className="hidden w-80 h-80 mx-auto mb-4 bg-gradient-to-br from-green-600 to-green-800 rounded-2xl flex items-center justify-center drop-shadow-2xl hover:scale-105 transition-all duration-300"
+            className="hidden w-48 h-48 mx-auto mb-3 bg-gradient-to-br from-green-600 to-green-800 rounded-xl flex items-center justify-center drop-shadow-xl hover:scale-105 transition-all duration-300"
             style={{ display: 'none' }}
           >
             <div className="text-center">
-              <div className="text-6xl font-extrabold text-yellow-400 mb-2 drop-shadow-lg">
+              <div className="text-3xl font-extrabold text-yellow-400 mb-1 drop-shadow-lg">
                 POP MA<br />DICE
               </div>
-              <div className="text-4xl">🎲🎲</div>
+              <div className="text-2xl">🎲🎲</div>
             </div>
           </div>
         </div>
-        <p className="text-white/90 text-xl font-medium drop-shadow-lg">Roll the dice, test your luck! 🎲✨</p>
+        <p className="text-white/90 text-lg font-medium drop-shadow-lg">Roll the dice, test your luck! 🎲✨</p>
       </div>
       <div className="mb-4 flex gap-4">
         <Button
