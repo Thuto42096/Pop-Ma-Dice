@@ -19,9 +19,9 @@ export async function GET() {
 
   return Response.json({
     accountAssociation: withValidProperties({
-      header: process.env.FARCASTER_HEADER,
-      payload: process.env.FARCASTER_PAYLOAD,
-      signature: process.env.FARCASTER_SIGNATURE,
+      header: process.env.FARCASTER_HEADER || "eyJmaWQiOjEzMjQ0MDEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg1NjdmYUVDZTc5YTUzM0EwRjU5RmEzNzkxYkYxYkU1ZDNCMTdiNDI5In0",
+      payload: process.env.FARCASTER_PAYLOAD || "eyJkb21haW4iOiJwb3AtbWEtZGljZS52ZXJjZWwuYXBwIn0",
+      signature: process.env.FARCASTER_SIGNATURE || "MHhjYTUxNzBhZTZlMGY3MjBhNmZkMzQwOTQ2ZmQ1ZjEzNWZhMDE3Y2QyNjJjNDc4YmVhODY3NTUwNTg1NTAzZTc4MGZiMGE4NjE1NGNkMjQ2ZGNlNTA5OTI4Zjg4MDQwNmYxNDFiZGU0NTI0OGQxNmQ3ODhkMzM2OWJjZTdhZjMxNzFi",
     }),
     baseBuilder: withValidProperties({
       allowedAddresses: process.env.BASE_BUILDER_ALLOWED_ADDRESSES ?
@@ -42,7 +42,7 @@ export async function GET() {
       tags: ["dice", "game", "crypto", "base", "gambling"],
       heroImageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE || `${URL}/pop-ma-dice-logo.png`,
       tagline: process.env.NEXT_PUBLIC_APP_TAGLINE || "Roll the dice and win!",
-      ogTitle: process.env.NEXT_PUBLIC_APP_OG_TITLE || "Pop Ma Dice Game",
+      ogTitle: process.env.NEXT_PUBLIC_APP_OG_TITLE || "Pop Ma Dice Game", // 15 chars, under 30 limit
       ogDescription: process.env.NEXT_PUBLIC_APP_OG_DESCRIPTION || "A fun dice game on the Base network. Roll the dice, test your luck, and win big!",
       ogImageUrl: process.env.NEXT_PUBLIC_APP_OG_IMAGE || `${URL}/pop-ma-dice-logo.png`,
       requiredChains: ["eip155:8453"], // Base mainnet
