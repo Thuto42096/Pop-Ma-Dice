@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAccount, useBalance } from "wagmi";
 import { Button } from "./components/DemoComponents";
+import Image from "next/image";
 import {
   Transaction,
   TransactionButton,
@@ -302,7 +303,39 @@ export default function DiceGame() {
         </div>
       )}
 
-      <h1 className="text-3xl font-extrabold text-white mb-6 drop-shadow-lg">Pop Ma Dice 🎲</h1>
+      {/* Hero Logo */}
+      <div className="mb-8 text-center">
+        <div className="relative inline-block">
+          <Image
+            src="/pop-ma-dice-logo.png"
+            alt="Pop Ma Dice"
+            width={320}
+            height={320}
+            className="w-80 h-auto mx-auto mb-4 drop-shadow-2xl hover:scale-105 transition-all duration-300 rounded-2xl"
+            priority
+            onError={(e) => {
+              // Fallback to text logo if image fails to load
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              const fallback = target.nextElementSibling as HTMLElement;
+              if (fallback) fallback.style.display = 'block';
+            }}
+          />
+          {/* Fallback text logo */}
+          <div
+            className="hidden w-80 h-80 mx-auto mb-4 bg-gradient-to-br from-green-600 to-green-800 rounded-2xl flex items-center justify-center drop-shadow-2xl hover:scale-105 transition-all duration-300"
+            style={{ display: 'none' }}
+          >
+            <div className="text-center">
+              <div className="text-6xl font-extrabold text-yellow-400 mb-2 drop-shadow-lg">
+                POP MA<br />DICE
+              </div>
+              <div className="text-4xl">🎲🎲</div>
+            </div>
+          </div>
+        </div>
+        <p className="text-white/90 text-xl font-medium drop-shadow-lg">Roll the dice, test your luck! 🎲✨</p>
+      </div>
       <div className="mb-4 flex gap-4">
         <Button
           variant={mode === "offchain" ? "primary" : "outline"}
