@@ -42,7 +42,7 @@ export async function GET() {
       tags: ["dice", "game", "crypto", "base", "gambling"],
       heroImageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE || `${URL}/pop-ma-dice-logo.png`,
       tagline: process.env.NEXT_PUBLIC_APP_TAGLINE || "Roll the dice and win!",
-      ogTitle: process.env.NEXT_PUBLIC_APP_OG_TITLE || "Pop Ma Dice - Roll the Dice Game",
+      ogTitle: process.env.NEXT_PUBLIC_APP_OG_TITLE || "Pop Ma Dice Game",
       ogDescription: process.env.NEXT_PUBLIC_APP_OG_DESCRIPTION || "A fun dice game on the Base network. Roll the dice, test your luck, and win big!",
       ogImageUrl: process.env.NEXT_PUBLIC_APP_OG_IMAGE || `${URL}/pop-ma-dice-logo.png`,
       requiredChains: ["eip155:8453"], // Base mainnet
