@@ -10,6 +10,20 @@ import {
   TransactionStatusLabel,
   TransactionStatusAction
 } from "@coinbase/onchainkit/transaction";
+import {
+  ConnectWallet,
+  Wallet,
+  WalletDropdown,
+  WalletDropdownLink,
+  WalletDropdownDisconnect,
+} from '@coinbase/onchainkit/wallet';
+import {
+  Address,
+  Avatar,
+  Name,
+  Identity,
+  EthBalance,
+} from '@coinbase/onchainkit/identity';
 import { formatEther, parseEther } from "viem";
 
 function DiceFace({ value }: { value: number }) {
@@ -285,6 +299,33 @@ export default function DiceGame() {
           Onchain
         </Button>
       </div>
+
+      {/* Wallet Connection Section */}
+      <div className="mb-6">
+        <Wallet>
+          <ConnectWallet className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+            <Avatar className="h-5 w-5" />
+            <Name className="ml-2" />
+          </ConnectWallet>
+          <WalletDropdown>
+            <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
+              <Avatar />
+              <Name />
+              <Address className="text-sm" />
+              <EthBalance />
+            </Identity>
+            <WalletDropdownLink
+              icon="wallet"
+              href="https://keys.coinbase.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Wallet
+            </WalletDropdownLink>
+            <WalletDropdownDisconnect />
+          </WalletDropdown>
+        </Wallet>
+      </div>
       <div className="flex space-x-12 mb-8">
         <Dice
           value={currentDice[0]}
@@ -384,13 +425,7 @@ export default function DiceGame() {
           </Button>
         )}
       </div>
-      <div className="mb-4 text-white text-sm">
-        {isConnected ? (
-          <span>Wallet: <span className="font-mono">{address}</span></span>
-        ) : (
-          <span className="text-red-300">Connect your wallet to play onchain</span>
-        )}
-      </div>
+
       <div className="mt-8 w-full max-w-md">
         {result && (
           <div className="bg-white rounded-lg p-6 shadow-xl">
