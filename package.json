@@ -1,0 +1,14 @@
+{
+  "name": "pop-ma-dice-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd pop-ma-dice && npm run dev",
+    "build": "cd pop-ma-dice && npm run build",
+    "start": "cd pop-ma-dice && npm run start",
+    "lint": "cd pop-ma-dice && npm run lint"
+  },
+  "workspaces": [
+    "pop-ma-dice"
+  ]
+}
