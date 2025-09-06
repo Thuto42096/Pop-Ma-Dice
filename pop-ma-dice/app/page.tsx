@@ -283,7 +283,25 @@ export default function DiceGame() {
   const canBet = isConnected && betAmount > 0 && balance !== null && betAmount <= balance;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-green-900">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-green-900 relative">
+      {/* Stake Display Window - Top Right Corner */}
+      {mode === "onchain" && betAmount > 0 && (
+        <div className={`fixed top-4 right-4 bg-gradient-to-br from-white to-blue-50 backdrop-blur-sm rounded-xl px-4 py-3 shadow-xl border-2 border-blue-200 z-10 animate-slide-in ${
+          gameState !== "idle" ? "animate-glow" : ""
+        }`}>
+          <div className="text-xs text-blue-600 font-semibold uppercase tracking-wide">Current Stake</div>
+          <div className="text-xl font-bold text-gray-800 flex items-center gap-2 mt-1">
+            <span className="text-2xl">💰</span>
+            <span className="font-mono">{betAmount} {betToken}</span>
+          </div>
+          {gameState !== "idle" && (
+            <div className="text-xs text-blue-500 font-medium mt-1 animate-pulse">
+              🎲 Game in progress...
+            </div>
+          )}
+        </div>
+      )}
+
       <h1 className="text-3xl font-extrabold text-white mb-6 drop-shadow-lg">Pop Ma Dice 🎲</h1>
       <div className="mb-4 flex gap-4">
         <Button
@@ -426,34 +444,83 @@ export default function DiceGame() {
         )}
       </div>
 
-      <div className="mt-8 w-full max-w-md">
+      <div className="mt-8 flex justify-center">
         {result && (
-          <div className="bg-white rounded-lg p-6 shadow-xl">
-            <div className="mb-2 text-lg font-semibold">Initial Roll: <span className="font-mono">[{result.initialRoll?.join(", ")}]</span></div>
-            {additionalRolls.length > 0 && (
-              <div className="mb-2 text-sm">Additional Rolls:
-                <ul className="list-disc ml-6">
-                  {additionalRolls.map((rollData, idx) => (
-                    <li key={idx} className="font-mono">[{rollData.roll.join(", ")}] = {rollData.total}</li>
-                  ))}
-                </ul>
+          <div className={`bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 shadow-2xl border border-gray-200 backdrop-blur-sm max-w-fit relative overflow-hidden animate-slide-in ${
+            result.outcome === "lose" ? "animate-shake" : ""
+          }`}>
+            {/* Decorative background pattern */}
+            <div className={`absolute inset-0 rounded-xl ${
+              result.outcome === "win"
+                ? "bg-gradient-to-br from-green-50/40 to-emerald-50/40"
+                : result.outcome === "lose"
+                ? "bg-gradient-to-br from-red-50/40 to-pink-50/40"
+                : "bg-gradient-to-br from-blue-50/30 to-purple-50/30"
+            }`}></div>
+
+            {/* Content */}
+            <div className="relative z-10">
+              <div className="mb-4 text-center">
+                <div className="text-sm font-semibold text-gray-600 mb-2 flex items-center justify-center gap-1">
+                  <span>🎲</span> Initial Roll
+                </div>
+                <div className="text-2xl font-bold font-mono text-gray-800 bg-white/80 px-4 py-2 rounded-xl inline-block shadow-sm border">
+                  [{result.initialRoll?.join(", ")}]
+                </div>
               </div>
-            )}
-            <div className={`mt-4 text-2xl font-bold flex items-center ${result.outcome === "win" ? "text-green-600" : result.outcome === "lose" ? "text-red-600 animate-shake" : "text-blue-600"}`}>
-              {result.outcome === "win" ? "POP!" : result.outcome === "lose" ? "KRAP!" : ""}
-              <span className="ml-3 text-base font-normal">({result.reason})</span>
+
+              {additionalRolls.length > 0 && (
+                <div className="mb-4 text-center">
+                  <div className="text-xs font-semibold text-gray-500 mb-2 flex items-center justify-center gap-1">
+                    <span>📈</span> Additional Rolls
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {additionalRolls.map((rollData, idx) => (
+                      <div key={idx} className="text-sm font-mono text-gray-700 bg-white/60 px-3 py-1 rounded-lg shadow-sm border">
+                        [{rollData.roll.join(", ")}] = {rollData.total}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="text-center">
+                <div className={`text-4xl font-extrabold mb-2 transition-all duration-300 ${
+                  result.outcome === "win"
+                    ? "text-green-600 drop-shadow-lg animate-bounce"
+                    : result.outcome === "lose"
+                    ? "text-red-600"
+                    : "text-blue-600"
+                }`}>
+                  {result.outcome === "win" ? "🎉 POP! 🎉" : result.outcome === "lose" ? "💥 KRAP! 💥" : "🎲"}
+                </div>
+                {result.reason && (
+                  <div className={`text-sm font-semibold px-4 py-2 rounded-full inline-block shadow-sm ${
+                    result.outcome === "win"
+                      ? "text-green-700 bg-green-100 border border-green-200"
+                      : result.outcome === "lose"
+                      ? "text-red-700 bg-red-100 border border-red-200"
+                      : "text-blue-700 bg-blue-100 border border-blue-200"
+                  }`}>
+                    {result.reason}
+                  </div>
+                )}
+              </div>
+
+              {showConfetti && (
+                <div className="absolute inset-0 flex justify-center items-center pointer-events-none z-20">
+                  <div className="text-7xl animate-bounce">🎊✨🎊</div>
+                </div>
+              )}
+
+              {(result.error || txError) && (
+                <div className="mt-4 text-center">
+                  <div className="text-sm text-red-700 bg-red-50 px-4 py-3 rounded-xl border border-red-200 shadow-sm">
+                    <span className="text-lg">⚠️</span> {result.error || txError}
+                  </div>
+                </div>
+              )}
             </div>
-            {showConfetti && (
-              <div className="absolute left-0 right-0 top-0 h-32 flex justify-center items-center pointer-events-none">
-                <span className="text-5xl animate-bounce">🎉🎉🎉</span>
-              </div>
-            )}
-            {result.error && (
-              <div className="mt-2 text-red-700">{result.error}</div>
-            )}
-            {txError && (
-              <div className="mt-2 text-red-700">{txError}</div>
-            )}
           </div>
         )}
       </div>
