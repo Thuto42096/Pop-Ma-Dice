@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAccount, useBalance } from "wagmi";
 import { Button } from "./components/DemoComponents";
 import Image from "next/image";
+import { sdk } from "@farcaster/miniapp-sdk";
 import {
   Transaction,
   TransactionButton,
@@ -177,6 +178,13 @@ export default function DiceGame() {
 
   const [txError, setTxError] = useState("");
   const [gameState, setGameState] = useState<"idle" | "continue" | "finished">("idle");
+
+  // Signal to Farcaster frame that the app is ready
+  useEffect(() => {
+    if (typeof window !== 'undefined' && sdk?.actions?.ready) {
+      sdk.actions.ready();
+    }
+  }, []);
   const [currentDice, setCurrentDice] = useState<[number, number]>([1, 1]);
   const [additionalRolls, setAdditionalRolls] = useState<Array<{roll: [number, number], total: number}>>([]);
 
