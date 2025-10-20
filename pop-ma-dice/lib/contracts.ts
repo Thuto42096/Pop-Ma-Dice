@@ -1,8 +1,8 @@
 // Smart contract configuration for Pop Ma Dice on Base network
-import { parseAbi } from 'viem';
+import { parseAbi, encodeFunctionData, parseEther } from 'viem';
 
 // Base network contract addresses
-export const DICE_GAME_ADDRESS = (process.env.NEXT_PUBLIC_DICE_GAME_CONTRACT || 
+export const DICE_GAME_ADDRESS = (process.env.NEXT_PUBLIC_DICE_GAME_CONTRACT ||
   '0x0000000000000000000000000000000000000000') as `0x${string}`;
 
 export const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as `0x${string}`;
@@ -24,6 +24,8 @@ export const ERC20_ABI = parseAbi([
   'function approve(address spender, uint256 amount) returns (bool)',
   'function balanceOf(address account) view returns (uint256)',
   'function allowance(address owner, address spender) view returns (uint256)',
+  'function transfer(address to, uint256 amount) returns (bool)',
+  'function transferFrom(address from, address to, uint256 amount) returns (bool)',
 ]);
 
 // Game state types
@@ -51,10 +53,14 @@ export function createBetTransaction(
   tokenAddress: `0x${string}`,
   isNative: boolean
 ) {
-  const calls = [];
+  const calls: Array<{
+    to: `0x${string}`;
+    data: `0x${string}`;
+    value?: bigint;
+  }> = [];
 
   // If using USDC, need to approve first
-  if (!isNative && tokenAddress !== USDC_ADDRESS) {
+  if (!isNative && tokenAddress === USDC_ADDRESS) {
     calls.push({
       to: tokenAddress,
       data: encodeFunctionData({
@@ -73,25 +79,9 @@ export function createBetTransaction(
       functionName: 'placeBet',
       args: [parseEther(betAmount), tokenAddress],
     }),
-    value: isNative ? parseEther(betAmount) : '0',
+    value: isNative ? parseEther(betAmount) : BigInt(0),
   });
 
   return calls;
 }
-
-// Helper to encode function data
-function encodeFunctionData({
-  abi,
-  functionName,
-  args,
-}: {
-  abi: any;
-  functionName: string;
-  args: any[];
-}): `0x${string}` {
-  // This is a placeholder - in production you'd use viem's encodeFunctionData
-  return '0x' as `0x${string}`;
-}
-
-import { parseEther } from 'viem';
 
