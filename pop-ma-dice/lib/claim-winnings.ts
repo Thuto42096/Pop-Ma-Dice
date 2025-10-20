@@ -1,6 +1,13 @@
 // Claim Winnings Functionality for Pop Ma Dice
 import { getDatabase } from './db-client';
 import { GameResult } from './game-types';
+import {
+  claimWinningsViaContract,
+  estimateClaimWinningsGas,
+  getGameStateFromContract,
+  isWinningsClaimed,
+  watchClaimTransaction,
+} from './smart-contract-integration';
 
 export interface ClaimWinningsRequest {
   playerId: string;
@@ -152,14 +159,27 @@ export async function claimGameWinnings(
       throw new Error('Winnings already claimed for this game');
     }
 
-    // In production, this would interact with smart contract
-    // For now, we'll simulate the transaction
-    const txHash = generateMockTxHash();
+    // Claim via smart contract
+    const contractResult = await claimWinningsViaContract({
+      gameId,
+      playerAddress: address,
+      winningsAmount,
+      tokenAddress: gameResult.tokenAddress || '0x0000000000000000000000000000000000000000',
+    });
+
+    if (!contractResult.success) {
+      throw new Error(contractResult.error || 'Failed to claim winnings via contract');
+    }
+
+    const txHash = contractResult.txHash;
+
+    // Watch for transaction confirmation
+    const confirmation = await watchClaimTransaction(txHash);
 
     // Update game result with claim transaction
     await db.query(`
-      UPDATE game_results 
-      SET txHash = $1 
+      UPDATE game_results
+      SET txHash = $1, claimedAt = NOW()
       WHERE gameId = $2;
     `, [txHash, gameId]);
 
@@ -169,7 +189,7 @@ export async function claimGameWinnings(
       playerId,
       winningsAmount: winningsAmount.toString(),
       txHash,
-      message: `Successfully claimed ${winningsAmount.toString()} winnings`,
+      message: `Successfully claimed ${winningsAmount.toString()} winnings. Transaction: ${txHash}`,
       timestamp: new Date(),
     };
   } catch (error) {
