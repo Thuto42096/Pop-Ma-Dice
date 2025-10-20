@@ -14,7 +14,7 @@ export class MatchmakingService {
     betAmount: bigint,
     mode: 'pvp' | 'pve' = 'pvp'
   ): Promise<GameSession | null> {
-    const db = getDatabase();
+    const db = await getDatabase();
 
     // Check if player already in queue
     const existingQueue = await db.getQueueEntries(1000);
@@ -50,7 +50,7 @@ export class MatchmakingService {
     address: `0x${string}`,
     betAmount: bigint
   ): Promise<GameSession | null> {
-    const db = getDatabase();
+    const db = await getDatabase();
     const queueEntries = await db.getQueueEntries(1000);
 
     // Find a player with similar bet amount (within 10%)
@@ -100,7 +100,7 @@ export class MatchmakingService {
     totalPlayers: number;
     averageWaitTime: number;
   }> {
-    const db = getDatabase();
+    const db = await getDatabase();
     const queueEntries = await db.getQueueEntries(1000);
 
     if (queueEntries.length === 0) {
@@ -124,7 +124,7 @@ export class MatchmakingService {
    * Clean up stale queue entries (older than 5 minutes)
    */
   static async cleanupStaleQueue(): Promise<number> {
-    const db = getDatabase();
+    const db = await getDatabase();
     const queueEntries = await db.getQueueEntries(1000);
     const now = new Date();
     const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);

@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const db = getDatabase();
+    const db = await getDatabase();
 
     // Get or create player
     let player = await db.getPlayerByAddress(address);

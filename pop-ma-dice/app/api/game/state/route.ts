@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const db = getDatabase();
+    const db = await getDatabase();
     const game = await db.getGameSession(gameId);
 
     if (!game) {

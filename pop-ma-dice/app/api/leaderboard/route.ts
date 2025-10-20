@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       1000
     );
 
-    const db = getDatabase();
+    const db = await getDatabase();
     const topPlayers = await db.getLeaderboard(limit);
 
     const leaderboard: Leaderboard[] = topPlayers.map((player, index) => ({

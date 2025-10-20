@@ -141,10 +141,21 @@ export class InMemoryGameDatabase implements IGameDatabase {
 // Singleton instance
 let dbInstance: IGameDatabase | null = null;
 
-export function getDatabase(): IGameDatabase {
+export async function getDatabase(): Promise<IGameDatabase> {
   if (!dbInstance) {
-    // In production, initialize with PostgreSQL or MongoDB client
-    dbInstance = new InMemoryGameDatabase();
+    const databaseUrl = process.env.DATABASE_URL;
+
+    if (databaseUrl) {
+      // Use PostgreSQL in production
+      const { PostgresGameDatabase } = await import('./postgres-client');
+      const db = new PostgresGameDatabase(databaseUrl);
+      await db.initialize();
+      dbInstance = db;
+    } else {
+      // Use in-memory database in development
+      console.warn('⚠️  DATABASE_URL not set, using in-memory database');
+      dbInstance = new InMemoryGameDatabase();
+    }
   }
   return dbInstance;
 }
