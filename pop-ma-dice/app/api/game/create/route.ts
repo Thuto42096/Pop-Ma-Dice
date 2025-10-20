@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GameEngine } from '@/lib/game-engine';
 import { getDatabase } from '@/lib/db-client';
 import { MatchmakingService } from '@/lib/matchmaking';
+import { notifyGameCreated, notifyMatchFound, notifyQueueUpdate } from '@/lib/websocket-integration';
 
 export async function POST(request: NextRequest) {
   try {
@@ -57,6 +58,9 @@ export async function POST(request: NextRequest) {
       const game = GameEngine.createGameSession(playerId, address, bet, 'pve');
       await db.createGameSession(game);
 
+      // Notify player of game creation
+      notifyGameCreated(game);
+
       return NextResponse.json({
         success: true,
         game,
@@ -72,17 +76,30 @@ export async function POST(request: NextRequest) {
       );
 
       if (game) {
+        // Match found - notify both players
+        notifyGameCreated(game);
+        notifyMatchFound(
+          game.id,
+          game.player1.id,
+          game.player2!.id,
+          game
+        );
+
         return NextResponse.json({
           success: true,
           game,
           message: 'Match found! Game started.',
         });
       } else {
+        // Added to queue - notify queue update
+        const queueStatus = await MatchmakingService.getQueueStatus();
+        notifyQueueUpdate(queueStatus.totalInQueue);
+
         return NextResponse.json({
           success: true,
           game: null,
           message: 'Added to matchmaking queue. Waiting for opponent...',
-          queueStatus: await MatchmakingService.getQueueStatus(),
+          queueStatus,
         });
       }
     }

@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db-client';
+import { notifyPlayerStatsUpdate } from '@/lib/websocket-integration';
 
 export async function GET(request: NextRequest) {
   try {
@@ -65,6 +66,15 @@ export async function GET(request: NextRequest) {
         timestamp: result.timestamp,
       })),
     };
+
+    // Notify player of their stats update
+    notifyPlayerStatsUpdate(playerId, {
+      totalWinnings: stats.stats.totalWinnings,
+      gamesWon: stats.stats.gamesWon,
+      gamesLost: stats.stats.gamesLost,
+      gamesDrawn: stats.stats.gamesDrawn,
+      winRate: stats.stats.winRate,
+    });
 
     return NextResponse.json({
       success: true,

@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db-client';
 import { Leaderboard } from '@/lib/game-types';
+import { notifyLeaderboardUpdate } from '@/lib/websocket-integration';
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,6 +27,16 @@ export async function GET(request: NextRequest) {
           ? (player.gamesWon / (player.gamesWon + player.gamesLost)) * 100
           : 0,
     }));
+
+    // Broadcast leaderboard updates to all connected players
+    leaderboard.forEach((entry) => {
+      notifyLeaderboardUpdate(entry.playerId, entry.rank, {
+        totalWinnings: entry.totalWinnings.toString(),
+        gamesWon: entry.gamesWon,
+        gamesLost: entry.gamesLost,
+        winRate: entry.winRate.toFixed(2),
+      });
+    });
 
     return NextResponse.json({
       success: true,

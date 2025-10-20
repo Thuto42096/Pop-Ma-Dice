@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GameEngine } from '@/lib/game-engine';
 import { getDatabase } from '@/lib/db-client';
+import { notifyGameRoll, notifyGameResult, notifyLeaderboardUpdate, notifyPlayerStatsUpdate } from '@/lib/websocket-integration';
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,7 +40,16 @@ export async function POST(request: NextRequest) {
     // Save updated game
     await db.updateGameSession(gameId, updatedGame);
 
-    // If game finished, update player stats
+    // Notify players of the roll
+    const currentRolls = updatedGame.player1.rolls[updatedGame.currentRound - 1] || [];
+    notifyGameRoll(
+      gameId,
+      updatedGame.player1.id,
+      currentRolls,
+      updatedGame.player1.outcome || 'continue'
+    );
+
+    // If game finished, update player stats and notify
     if (updatedGame.status === 'finished') {
       const winnings = GameEngine.calculateWinnings(updatedGame);
 
@@ -53,6 +63,13 @@ export async function POST(request: NextRequest) {
           gamesWon: player1.gamesWon + (isWinner ? 1 : 0),
           gamesLost: player1.gamesLost + (isWinner ? 0 : 1),
           gamesDrawn: player1.gamesDrawn + (!updatedGame.winner ? 1 : 0),
+        });
+
+        // Notify player 1 of stats update
+        notifyPlayerStatsUpdate(updatedGame.player1.id, {
+          totalWinnings: player1.totalWinnings + winnings.player1Winnings,
+          gamesWon: player1.gamesWon + (isWinner ? 1 : 0),
+          gamesLost: player1.gamesLost + (isWinner ? 0 : 1),
         });
       }
 
@@ -68,11 +85,18 @@ export async function POST(request: NextRequest) {
             gamesLost: player2.gamesLost + (isWinner ? 0 : 1),
             gamesDrawn: player2.gamesDrawn + (!updatedGame.winner ? 1 : 0),
           });
+
+          // Notify player 2 of stats update
+          notifyPlayerStatsUpdate(updatedGame.player2.id, {
+            totalWinnings: player2.totalWinnings + winnings.player2Winnings,
+            gamesWon: player2.gamesWon + (isWinner ? 1 : 0),
+            gamesLost: player2.gamesLost + (isWinner ? 0 : 1),
+          });
         }
       }
 
       // Create game result
-      await db.createGameResult({
+      const result = {
         gameId: updatedGame.id,
         player1Id: updatedGame.player1.id,
         player2Id: updatedGame.player2?.id,
@@ -83,6 +107,20 @@ export async function POST(request: NextRequest) {
         player2Winnings: winnings.player2Winnings,
         txHash: updatedGame.txHash || '',
         timestamp: new Date(),
+      };
+      await db.createGameResult(result);
+
+      // Notify players of game result
+      notifyGameResult(result, updatedGame);
+
+      // Notify leaderboard of changes
+      const topPlayers = await db.getLeaderboard(10);
+      topPlayers.forEach((player, index) => {
+        notifyLeaderboardUpdate(player.id, index + 1, {
+          totalWinnings: player.totalWinnings.toString(),
+          gamesWon: player.gamesWon,
+          gamesLost: player.gamesLost,
+        });
       });
     }
 
