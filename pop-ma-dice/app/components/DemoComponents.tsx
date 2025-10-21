@@ -10,7 +10,7 @@ import {
   TransactionToastIcon,
   TransactionToastLabel,
   TransactionError,
-  TransactionResponse,
+  TransactionResponseType,
   TransactionStatusAction,
   TransactionStatusLabel,
   TransactionStatus,
@@ -403,15 +403,17 @@ function TransactionCard() {
 
   const sendNotification = useNotification();
 
-  const handleSuccess = useCallback(async (response: TransactionResponse) => {
-    const transactionHash = response.transactionReceipts[0].transactionHash;
+  const handleSuccess = useCallback(async (response: TransactionResponseType) => {
+    const transactionHash = response.transactionReceipts?.[0]?.transactionHash;
 
     console.log(`Transaction successful: ${transactionHash}`);
 
-    await sendNotification({
-      title: "Congratulations!",
-      body: `You sent your a transaction, ${transactionHash}!`,
-    });
+    if (transactionHash) {
+      await sendNotification({
+        title: "Congratulations!",
+        body: `You sent your a transaction, ${transactionHash}!`,
+      });
+    }
   }, [sendNotification]);
 
   return (
@@ -444,7 +446,7 @@ function TransactionCard() {
                 <TransactionStatusAction />
                 <TransactionStatusLabel />
               </TransactionStatus>
-              <TransactionToast className="mb-4">
+              <TransactionToast className="mb-4" duration={5}>
                 <TransactionToastIcon />
                 <TransactionToastLabel />
                 <TransactionToastAction />

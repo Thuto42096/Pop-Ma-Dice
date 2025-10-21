@@ -32,7 +32,7 @@ export function notifyGameCreated(game: GameSession): void {
 
   // Broadcast to game room
   ws.sendToGame(game.id, {
-    type: 'game:started',
+    type: 'game:update',
     data: {
       sessionId: game.id,
       game,
@@ -48,7 +48,7 @@ export function notifyGameRoll(
   sessionId: string,
   playerId: string,
   rolls: number[],
-  result: 'win' | 'lose' | 'continue'
+  result: 'win' | 'lose' | 'draw' | 'continue'
 ): void {
   const ws = getWebSocketServer();
 
@@ -95,7 +95,7 @@ export function notifyGameResult(result: GameResult, game: GameSession): void {
 
   // Broadcast to game room
   ws.sendToGame(result.gameId, {
-    type: 'game:finished',
+    type: 'game:result',
     data: {
       sessionId: result.gameId,
       result,
@@ -195,15 +195,16 @@ export function notifyPlayerStatsUpdate(playerId: string, stats: any): void {
 /**
  * Notify player joined
  */
-export function notifyPlayerJoined(player: Player): void {
+export function notifyPlayerJoined(player: Player, rank: number = 0): void {
   const ws = getWebSocketServer();
 
   ws.broadcastToLeaderboard({
-    type: 'player:joined',
+    type: 'leaderboard:update',
     data: {
       playerId: player.id,
       username: player.username,
       address: player.walletAddress,
+      rank,
     },
     timestamp: Date.now(),
   });
@@ -212,13 +213,14 @@ export function notifyPlayerJoined(player: Player): void {
 /**
  * Notify player left
  */
-export function notifyPlayerLeft(playerId: string): void {
+export function notifyPlayerLeft(playerId: string, rank: number = 0): void {
   const ws = getWebSocketServer();
 
   ws.broadcastToLeaderboard({
-    type: 'player:left',
+    type: 'leaderboard:update',
     data: {
       playerId,
+      rank,
     },
     timestamp: Date.now(),
   });

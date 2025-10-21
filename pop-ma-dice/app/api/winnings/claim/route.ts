@@ -31,10 +31,7 @@ export async function POST(request: NextRequest) {
       txHash: result.txHash,
     });
 
-    return NextResponse.json({
-      success: true,
-      ...result,
-    });
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error claiming winnings:', error);
     return NextResponse.json(

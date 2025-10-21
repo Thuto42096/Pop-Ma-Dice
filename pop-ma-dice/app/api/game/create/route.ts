@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       } else {
         // Added to queue - notify queue update
         const queueStatus = await MatchmakingService.getQueueStatus();
-        notifyQueueUpdate(queueStatus.totalInQueue);
+        notifyQueueUpdate(queueStatus.totalPlayers);
 
         return NextResponse.json({
           success: true,

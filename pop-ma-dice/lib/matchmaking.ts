@@ -89,7 +89,7 @@ export class MatchmakingService {
    * Leave matchmaking queue
    */
   static async leaveQueue(playerId: string): Promise<void> {
-    const db = getDatabase();
+    const db = await getDatabase();
     await db.removeFromQueue(playerId);
   }
 

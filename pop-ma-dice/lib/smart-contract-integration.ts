@@ -90,18 +90,24 @@ export async function claimWinningsViaContract(
     }
 
     // Get game state from contract
-    const gameState = await publicClient.readContract({
+    const gameStateData = await publicClient.readContract({
       address: DICE_GAME_ADDRESS,
       abi: DICE_GAME_ABI,
       functionName: 'getGameState',
       args: [BigInt(gameId)],
-    });
+    }) as readonly [string, bigint, string, number, number, number, number, boolean, boolean, bigint] | null;
 
-    if (!gameState || !gameState.finished) {
-      throw new Error('Game not finished or does not exist');
+    if (!gameStateData) {
+      throw new Error('Game does not exist');
     }
 
-    if (!gameState.won) {
+    const [, , , , , , , finished, won] = gameStateData;
+
+    if (!finished) {
+      throw new Error('Game not finished');
+    }
+
+    if (!won) {
       throw new Error('Player did not win this game');
     }
 
@@ -165,12 +171,16 @@ export async function getPlayerStatsFromContract(
   gamesLost: bigint;
 }> {
   try {
-    const stats = await publicClient.readContract({
+    const stats = (await publicClient.readContract({
       address: DICE_GAME_ADDRESS,
       abi: DICE_GAME_ABI,
       functionName: 'getPlayerStats',
       args: [playerAddress],
-    });
+    })) as [bigint, bigint, bigint, bigint] | null;
+
+    if (!stats) {
+      throw new Error('Failed to get player stats from contract');
+    }
 
     return {
       totalBets: stats[0],
@@ -189,22 +199,28 @@ export async function getPlayerStatsFromContract(
  */
 export async function getGameStateFromContract(gameId: string) {
   try {
-    const gameState = await publicClient.readContract({
+    const gameStateData = await publicClient.readContract({
       address: DICE_GAME_ADDRESS,
       abi: DICE_GAME_ABI,
       functionName: 'getGameState',
       args: [BigInt(gameId)],
-    });
+    }) as readonly [string, bigint, string, number, number, number, number, boolean, boolean, bigint] | null;
+
+    if (!gameStateData) {
+      throw new Error('Game state not found');
+    }
+
+    const [player, betAmount, token, initialRoll1, initialRoll2, lastRoll1, lastRoll2, finished, won, winnings] = gameStateData;
 
     return {
-      player: gameState.player,
-      betAmount: gameState.betAmount,
-      token: gameState.token,
-      initialRoll: gameState.initialRoll,
-      lastRoll: gameState.lastRoll,
-      finished: gameState.finished,
-      won: gameState.won,
-      winnings: gameState.winnings,
+      player: player as `0x${string}`,
+      betAmount,
+      token: token as `0x${string}`,
+      initialRoll: [initialRoll1, initialRoll2] as [number, number],
+      lastRoll: [lastRoll1, lastRoll2] as [number, number],
+      finished,
+      won,
+      winnings,
     };
   } catch (error) {
     console.error('Error getting game state from contract:', error);
@@ -280,7 +296,7 @@ export async function watchClaimTransaction(
 ): Promise<{
   confirmed: boolean;
   blockNumber?: number;
-  gasUsed?: bigint;
+  gasUsed?: string;
   status?: 'success' | 'reverted';
 }> {
   try {
@@ -294,8 +310,8 @@ export async function watchClaimTransaction(
       if (receipt) {
         return {
           confirmed: true,
-          blockNumber: receipt.blockNumber,
-          gasUsed: receipt.gasUsed,
+          blockNumber: Number(receipt.blockNumber),
+          gasUsed: receipt.gasUsed?.toString(),
           status: receipt.status === 'success' ? 'success' : 'reverted',
         };
       }

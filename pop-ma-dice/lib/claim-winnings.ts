@@ -47,34 +47,28 @@ export interface PlayerClaimStatus {
 export async function getUnclaimedWinnings(playerId: string): Promise<PlayerWinnings[]> {
   try {
     const db = await getDatabase();
-    
-    // Get all game results where player won
-    const results = await db.query(`
-      SELECT 
-        gr.gameId,
-        CASE 
-          WHEN gr.player1Id = $1 THEN gr.player1Winnings
-          WHEN gr.player2Id = $1 THEN gr.player2Winnings
-          ELSE 0
-        END as winnings,
-        gr.txHash,
-        gr.timestamp
-      FROM game_results gr
-      WHERE (gr.player1Id = $1 OR gr.player2Id = $1)
-        AND (
-          (gr.player1Id = $1 AND gr.player1Winnings > 0) OR
-          (gr.player2Id = $1 AND gr.player2Winnings > 0)
-        )
-      ORDER BY gr.timestamp DESC;
-    `, [playerId]);
 
-    return results.rows.map((row: any) => ({
-      gameId: row.gameId,
-      amount: BigInt(row.winnings),
-      claimed: !!row.txHash,
-      claimedAt: row.txHash ? row.timestamp : undefined,
-      txHash: row.txHash,
-    }));
+    // Get all game results where player won
+    const results = await db.getGameResults(playerId, 1000);
+
+    return results
+      .filter((result) => {
+        // Only include games where player won
+        const playerWon =
+          (result.player1Id === playerId && result.player1Winnings > BigInt(0)) ||
+          (result.player2Id === playerId && (result.player2Winnings ?? BigInt(0)) > BigInt(0));
+        return playerWon;
+      })
+      .map((result) => {
+        const amount = result.player1Id === playerId ? result.player1Winnings : (result.player2Winnings ?? BigInt(0));
+        return {
+          gameId: result.gameId,
+          amount,
+          claimed: !!result.txHash,
+          claimedAt: result.txHash ? result.timestamp : undefined,
+          txHash: result.txHash,
+        };
+      });
   } catch (error) {
     console.error('Error getting unclaimed winnings:', error);
     throw error;
@@ -127,26 +121,23 @@ export async function claimGameWinnings(
     const { playerId, gameId, address } = request;
     const db = await getDatabase();
 
-    // Get game result
-    const result = await db.query(`
-      SELECT * FROM game_results WHERE gameId = $1;
-    `, [gameId]);
+    // Get all game results for player and find the matching game
+    const results = await db.getGameResults(playerId, 1000);
+    const gameResult = results.find((r) => r.gameId === gameId);
 
-    if (result.rows.length === 0) {
+    if (!gameResult) {
       throw new Error('Game not found');
     }
-
-    const gameResult = result.rows[0];
 
     // Determine if player won and get winnings amount
     let winningsAmount = BigInt(0);
     let isWinner = false;
 
-    if (gameResult.player1Id === playerId && gameResult.player1Winnings > 0) {
-      winningsAmount = BigInt(gameResult.player1Winnings);
+    if (gameResult.player1Id === playerId && gameResult.player1Winnings > BigInt(0)) {
+      winningsAmount = gameResult.player1Winnings;
       isWinner = true;
-    } else if (gameResult.player2Id === playerId && gameResult.player2Winnings > 0) {
-      winningsAmount = BigInt(gameResult.player2Winnings);
+    } else if (gameResult.player2Id === playerId && (gameResult.player2Winnings ?? BigInt(0)) > BigInt(0)) {
+      winningsAmount = gameResult.player2Winnings ?? BigInt(0);
       isWinner = true;
     }
 
@@ -164,7 +155,7 @@ export async function claimGameWinnings(
       gameId,
       playerAddress: address,
       winningsAmount,
-      tokenAddress: gameResult.tokenAddress || '0x0000000000000000000000000000000000000000',
+      tokenAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
     });
 
     if (!contractResult.success) {
@@ -174,14 +165,7 @@ export async function claimGameWinnings(
     const txHash = contractResult.txHash;
 
     // Watch for transaction confirmation
-    const confirmation = await watchClaimTransaction(txHash);
-
-    // Update game result with claim transaction
-    await db.query(`
-      UPDATE game_results
-      SET txHash = $1, claimedAt = NOW()
-      WHERE gameId = $2;
-    `, [txHash, gameId]);
+    await watchClaimTransaction(txHash);
 
     return {
       success: true,
@@ -284,36 +268,29 @@ export async function getWinningsHistory(
       throw new Error('Player not found');
     }
 
-    const results = await db.query(`
-      SELECT 
-        gr.gameId,
-        CASE 
-          WHEN gr.player1Id = $1 THEN gr.player1Winnings
-          WHEN gr.player2Id = $1 THEN gr.player2Winnings
-          ELSE 0
-        END as winnings,
-        gr.txHash,
-        gr.timestamp
-      FROM game_results gr
-      WHERE (gr.player1Id = $1 OR gr.player2Id = $1)
-        AND (
-          (gr.player1Id = $1 AND gr.player1Winnings > 0) OR
-          (gr.player2Id = $1 AND gr.player2Winnings > 0)
-        )
-      ORDER BY gr.timestamp DESC
-      LIMIT $2;
-    `, [playerId, limit]);
+    const allResults = await db.getGameResults(playerId, limit);
 
-    const history = results.rows.map((row: any) => ({
-      gameId: row.gameId,
-      amount: row.winnings.toString(),
-      claimed: !!row.txHash,
-      claimedAt: row.txHash ? row.timestamp : undefined,
-      txHash: row.txHash,
-    }));
+    const history = allResults
+      .filter((result) => {
+        // Only include games where player won
+        const playerWon =
+          (result.player1Id === playerId && result.player1Winnings > BigInt(0)) ||
+          (result.player2Id === playerId && (result.player2Winnings ?? BigInt(0)) > BigInt(0));
+        return playerWon;
+      })
+      .map((result) => {
+        const amount = result.player1Id === playerId ? result.player1Winnings : (result.player2Winnings ?? BigInt(0));
+        return {
+          gameId: result.gameId,
+          amount: amount.toString(),
+          claimed: !!result.txHash,
+          claimedAt: result.txHash ? result.timestamp : undefined,
+          txHash: result.txHash,
+        };
+      });
 
-    const claimedCount = history.filter(h => h.claimed).length;
-    const unclaimedCount = history.filter(h => !h.claimed).length;
+    const claimedCount = history.filter((h) => h.claimed).length;
+    const unclaimedCount = history.filter((h) => !h.claimed).length;
 
     return {
       playerId,

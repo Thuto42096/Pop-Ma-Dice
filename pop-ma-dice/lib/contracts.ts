@@ -10,13 +10,13 @@ export const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as `0x$
 // Dice Game Contract ABI
 export const DICE_GAME_ABI = parseAbi([
   'function placeBet(uint256 amount, address token) payable returns (uint256 gameId)',
-  'function rollDice(uint256 gameId) returns (uint8[2] rolls, bool won)',
-  'function continueRoll(uint256 gameId) returns (uint8[2] rolls, bool won)',
+  'function rollDice(uint256 gameId) returns (uint8 roll1, uint8 roll2, bool won)',
+  'function continueRoll(uint256 gameId) returns (uint8 roll1, uint8 roll2, bool won)',
   'function claimWinnings(uint256 gameId) returns (uint256 amount)',
-  'function getGameState(uint256 gameId) view returns (tuple(address player, uint256 betAmount, address token, uint8[2] initialRoll, uint8[2] lastRoll, bool finished, bool won, uint256 winnings))',
-  'function getPlayerStats(address player) view returns (tuple(uint256 totalBets, uint256 totalWinnings, uint256 gamesWon, uint256 gamesLost))',
-  'event BetPlaced(indexed address player, uint256 indexed gameId, uint256 amount, address token)',
-  'event GameFinished(indexed address player, uint256 indexed gameId, bool won, uint256 winnings)',
+  'function getGameState(uint256 gameId) view returns (address player, uint256 betAmount, address token, uint8 initialRoll1, uint8 initialRoll2, uint8 lastRoll1, uint8 lastRoll2, bool finished, bool won, uint256 winnings)',
+  'function getPlayerStats(address player) view returns (uint256 totalBets, uint256 totalWinnings, uint256 gamesWon, uint256 gamesLost)',
+  'event BetPlaced(address player, uint256 gameId, uint256 amount, address token)',
+  'event GameFinished(address player, uint256 gameId, bool won, uint256 winnings)',
 ]);
 
 // ERC20 ABI for token approvals

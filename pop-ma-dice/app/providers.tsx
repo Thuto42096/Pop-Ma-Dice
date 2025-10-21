@@ -4,7 +4,7 @@ import { type ReactNode } from "react";
 import { base } from "wagmi/chains";
 import { MiniKitProvider } from "@coinbase/onchainkit/minikit";
 import { WagmiProvider, createConfig, http } from "wagmi";
-import { coinbaseWallet, metaMaskWallet, walletConnectWallet } from "@wagmi/connectors";
+import { coinbaseWallet, metaMask, walletConnect } from "@wagmi/connectors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Create Wagmi config with multiple wallet connectors
@@ -15,8 +15,8 @@ const config = createConfig({
       appName: "Pop Ma Dice",
       appLogoUrl: process.env.NEXT_PUBLIC_ICON_URL || "/pop-ma-dice-logo.png",
     }),
-    metaMaskWallet(),
-    walletConnectWallet({
+    metaMask(),
+    walletConnect({
       projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "",
     }),
   ],

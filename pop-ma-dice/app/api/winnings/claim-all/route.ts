@@ -35,10 +35,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({
-      success: true,
-      ...result,
-    });
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error claiming all winnings:', error);
     return NextResponse.json(
