@@ -1,12 +1,34 @@
 #!/usr/bin/env node
 
 import { Pool } from 'pg'
+import * as fs from 'fs'
+import * as path from 'path'
+import { fileURLToPath } from 'url'
+
+// Load environment variables from .env.local
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const envPath = path.join(__dirname, '..', '.env.local')
+
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf-8')
+  envContent.split('\n').forEach(line => {
+    const [key, ...valueParts] = line.split('=')
+    if (key && !key.startsWith('#')) {
+      const value = valueParts.join('=').trim()
+      if (value) {
+        process.env[key.trim()] = value
+      }
+    }
+  })
+}
 
 // Load environment variables
 const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://popmauser:popmapass123@localhost:5432/pop_ma_dice'
 
 const pool = new Pool({
   connectionString: DATABASE_URL,
+  ssl: DATABASE_URL.includes('supabase') ? { rejectUnauthorized: false } : false,
 })
 
 async function setupDatabase() {

@@ -3,7 +3,7 @@ require("@nomicfoundation/hardhat-verify");
 require("dotenv").config();
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000000";
-const BASESCAN_API_KEY = process.env.BASESCAN_API_KEY || "";
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "";
 
 module.exports = {
   solidity: {
@@ -32,8 +32,8 @@ module.exports = {
   },
   etherscan: {
     apiKey: {
-      baseSepolia: BASESCAN_API_KEY,
-      baseMainnet: BASESCAN_API_KEY,
+      baseSepolia: ETHERSCAN_API_KEY,
+      baseMainnet: ETHERSCAN_API_KEY,
     },
     customChains: [
       {

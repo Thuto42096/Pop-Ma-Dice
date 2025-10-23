@@ -49,21 +49,21 @@ async function main() {
   fs.writeFileSync(deploymentFile, JSON.stringify(deploymentInfo, null, 2));
   console.log(`📄 Deployment info saved to: ${deploymentFile}\n`);
 
-  // Verify contract on Basescan (if not on hardhat)
+  // Verify contract on Etherscan (if not on hardhat)
   if (network !== "hardhat" && network !== "localhost") {
     console.log("⏳ Waiting for block confirmations before verification...");
     await diceGame.deploymentTransaction().wait(5);
 
-    console.log("🔍 Verifying contract on Basescan...");
+    console.log("🔍 Verifying contract on Etherscan...");
     try {
       await hre.run("verify:verify", {
         address: contractAddress,
         constructorArguments: [deployer.address],
       });
-      console.log("✅ Contract verified on Basescan!\n");
+      console.log("✅ Contract verified on Etherscan!\n");
     } catch (error) {
       if (error.message.includes("Already Verified")) {
-        console.log("✅ Contract already verified on Basescan!\n");
+        console.log("✅ Contract already verified on Etherscan!\n");
       } else {
         console.log("⚠️  Verification failed. You can verify manually later.\n");
         console.log(`Manual verification command:`);
