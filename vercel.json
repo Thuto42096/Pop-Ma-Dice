@@ -1,6 +1,7 @@
 {
-  "buildCommand": "cd pop-ma-dice && npm run build",
-  "outputDirectory": "pop-ma-dice/.next",
-  "installCommand": "cd pop-ma-dice && npm install",
-  "devCommand": "cd pop-ma-dice && npm run dev"
+  "root": "pop-ma-dice",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "devCommand": "npm run dev"
 }
