@@ -10,5 +10,8 @@
   },
   "workspaces": [
     "pop-ma-dice"
-  ]
+  ],
+  "devDependencies": {
+    "next": "^15.3.3"
+  }
 }
